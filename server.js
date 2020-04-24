@@ -106,10 +106,18 @@ createDictionaryTable();
 
 
 const  findUserDictionary  = (user_id, cb) => {
-    return  database.get(`SELECT * FROM user_dictionary WHERE user_id = ?`,user_id, (err, row) => {
+    return  database.all(`SELECT dictionary FROM user_dictionary WHERE user_id = ?`,user_id, (err, row) => {
             cb(err, row)
     });
 }
+
+
+// const  findUserDictionary  = (user_id, cb) => {
+//     return  database.get(`SELECT dictionary FROM user_dictionary WHERE user_id = ?`,user_id, (err, row) => {
+//             cb(err, row)
+//     });
+// }
+
 
 const addToUserDictionary = (user, cb) => {
     return database.run('INSERT INTO user_dictionary (user_id, dictionary) VALUES (?,?)', user ,(err) => {
@@ -118,34 +126,39 @@ const addToUserDictionary = (user, cb) => {
 }
 
 
-router.get('/dictionary', (req, res) => {
+router.post('/dictionary_get', (req, res) => {
+
     const  user_id  =  req.body.user_id;
-    findUserDictionary(user_id, (err, user_info)=>{
+    //console.log(user)
+        console.log(user_id)
+    findUserDictionary(user_id, (err, user)=>{
+        //console.log('ayyyyy')
+        //console.log(user_id)
         if (err) return  res.status(500).send('Server error!');
-        if (!user) return  res.status(404).send('User not found!');
-        res.status(200).send({ "user":  user_info});
+        if (!user) return  res.status(404).send('No words found!');
+        res.status(200).send({ "user_dict":  user});
     });
 });
 
 
 
 router.post('/dictionary', (req, res) => {
-    console.log('hi')
+    //console.log('hi')
     const  user_id  =  req.body.user_id;
     const  dictionary = JSON.stringify(req.body.dictionary)
-    console.log('dict')
-    console.log(dictionary)
+    //console.log('dict')
+    //console.log(dictionary)
     //console.log(req.body);
     addToUserDictionary([user_id, dictionary], (err)=>{
-        console.log('ummmmm')
+        //console.log('ummmmm')
         //console.log(err)
         if(err) return  res.status(500).send("Server error!");
         findUserDictionary(user_id, (err, user)=>{
-            console.log('ayyyyy')
-            console.log(user)
+            //console.log('ayyyyy')
+            //console.log(user)
             if (err) return  res.status(500).send('Server error!');
-        if (!user) return  res.status(404).send('User not found!');
-        //     res.status(200).send({ "user":  user, "access_token":  accessToken, "expires_in":  expiresIn});
+            if (!user) return  res.status(404).send('No words found!');
+            res.status(200).send({ "user_dict":  user});
         });
     });
 });
